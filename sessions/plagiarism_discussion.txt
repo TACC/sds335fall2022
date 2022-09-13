@@ -1,0 +1,44 @@
+Basic idea:
+
+for file_staged in $2/* ; do
+        diff_count=$(diff -w $file_staged $1 | wc -c)
+        if [ $diff_count -eq 0 ]
+        then
+                echo $file_staged and $1 are copies! Please check further!
+                exit 3
+        fi
+done
+
+The problem is that "$2/*" does not behave correctly on an empty directory.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[] mkdir empty
+[] for f in * ; do echo $f ; done
+compile
+empty
+other
+[] for f in empty ; do echo $f ; done
+empty
+[] for f in empty/* ; do echo $f ; done
+empty/*
+[] ( cd empty && for f in * ; do echo $f ; done )
+*
+[] for f in $( ls empty ) ; do echo $f ; done
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Solution 1:
+
+min_count=0
+dir_count=$(ls $2 | wc -l)
+if [ $dir_count -eq $min_count ]
+then
+        cp $1 $2
+        exit 2
+fi
+
+Solution 2:
+
+cd $2
+FILES=`ls -p | grep -v /`
+for file in $FILES
+
